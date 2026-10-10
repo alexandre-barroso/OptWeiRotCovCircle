@@ -1,0 +1,16 @@
+ClearAll["Global`*"];
+checks = {};
+record[name_, expr_] := (AppendTo[checks, <|"name" -> name, "pass" -> TrueQ[expr]|>]; If[! TrueQ[expr], Print["FAIL: ", name, " ", expr]; Exit[1]]);
+radius[n_, r_] := (1 + 2 n (n + 1) r)/(2 (2 n + 1));
+alpha[n_, r_] := (2 - r)/(2 n + 1);
+assumptions = Element[n, Integers] && n >= 1 && Element[r, Reals] && 1/(2 (n + 1)^2) <= r <= 1/(2 n^2);
+record["phase", FullSimplify[n r <= radius[n, r] <= (n + 1) r, assumptions]];
+record["total_arc_length", FullSimplify[2 (2 n + 1) radius[n, r] - 2 r n (n + 1) == 1, assumptions]];
+record["even_gap", FullSimplify[1 - n alpha[n, r] == 2 radius[n, r] - n r, assumptions]];
+record["odd_gap", FullSimplify[(n + 1) alpha[n, r] - 1 == 2 radius[n, r] - (n + 1) r, assumptions]];
+record["gap_nonnegative", FullSimplify[1 - n alpha[n, r] >= 0 && (n + 1) alpha[n, r] - 1 >= 0, assumptions]];
+record["boundary_continuity", FullSimplify[radius[n, 1/(2 (n + 1)^2)] == radius[n + 1, 1/(2 (n + 1)^2)], Element[n, Integers] && n >= 1]];
+record["large_noise_endpoint", radius[1, 1/2] == 1/2];
+record["example", alpha[1, 1/4] == 7/12 && radius[1, 1/4] == 1/3];
+record["monotone_constitutive", Reduce[0 < l < 1 && -l <= d <= l && 1 + d <= 0, {l, d}, Reals] === False];
+Print[ExportString[<|"status" -> "PASS", "version" -> $Version, "checks" -> checks, "scope" -> "Real-domain symbolic identities and inequalities; the covering argument is in Lean and the manuscript."|>, "RawJSON"]];
